@@ -1,40 +1,43 @@
 import { useRef, useEffect } from 'react';
 
-declare global {
-    interface Window {
-        atOptions?: any;
-    }
-}
-
 export function BannerAd() {
-    const containerRef = useRef<HTMLDivElement>(null);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
-        if (containerRef.current && !containerRef.current.firstChild) {
-            const conf = document.createElement('script');
-            conf.type = 'text/javascript';
-            conf.innerHTML = `
-            atOptions = {
+        if (iframeRef.current) {
+            const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+            if (doc) {
+                doc.open();
+                doc.write(`
+          <body style="margin:0; padding:0; display:flex; justify-content:center; align-items:center; background:transparent;">
+            <script type="text/javascript">
+              atOptions = {
                 'key' : '22f60cbde184452b7131b5d5083e812f',
                 'format' : 'iframe',
                 'height' : 250,
                 'width' : 300,
                 'params' : {}
-            };
-        `;
-            containerRef.current.appendChild(conf);
-
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = 'https://www.highperformanceformat.com/22f60cbde184452b7131b5d5083e812f/invoke.js';
-            script.async = true; // Essential for React
-            containerRef.current.appendChild(script);
+              };
+            </script>
+            <script type="text/javascript" src="https://www.highperformanceformat.com/22f60cbde184452b7131b5d5083e812f/invoke.js"></script>
+          </body>
+        `);
+                doc.close();
+            }
         }
     }, []);
 
     return (
         <div className="flex justify-center my-6">
-            <div ref={containerRef} className="flex justify-center items-center bg-slate-900/50 rounded-sm overflow-hidden" style={{ minWidth: '300px', minHeight: '250px' }}>
+            <div className="bg-slate-900/50 rounded-sm overflow-hidden" style={{ width: '300px', height: '250px' }}>
+                <iframe
+                    ref={iframeRef}
+                    title="Advertisement"
+                    width="300"
+                    height="250"
+                    className="border-0 overflow-hidden"
+                    scrolling="no"
+                />
             </div>
         </div>
     );

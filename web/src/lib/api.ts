@@ -1,15 +1,14 @@
 import type { Match } from "./types";
 
-const SOURCE1_URL = "https://raw.githubusercontent.com/albinchristo04/blogger-autopost/refs/heads/main/rojadirecta_events.json";
+// Source 1 Updated URL
+const SOURCE1_URL = "https://raw.githubusercontent.com/albinchristo04/ptv/refs/heads/main/futbollibre.json";
+// Source 2 URL remains same
 const SOURCE2_URL = "https://raw.githubusercontent.com/albinchristo04/mayiru/refs/heads/main/sports_events.json";
 
 // Helper to check if match is approximately live (within 2 hours start)
 export const isMatchLive = (matchTime: Date): boolean => {
     const now = new Date();
     const diff = (now.getTime() - matchTime.getTime()) / (1000 * 60); // minutes
-    // Live if started between -10 mins ago and +120 mins ago? 
-    // Sports match duration ~ 2 hours.
-    // Actually "Live" usually means: Current Time > Start Time AND Current Time < Start Time + Duration (e.g. 150 mins).
     return diff >= -15 && diff <= 150;
 };
 
@@ -19,36 +18,51 @@ export const hasMatchEnded = (matchTime: Date): boolean => {
     return diff > 150;
 }
 
-// Fetch Source 1
+// Fetch Source 1 (FutbolLibre)
 const fetchSource1 = async (): Promise<Match[]> => {
     try {
         const res = await fetch(SOURCE1_URL);
-        const data = await res.json();
+        const json = await res.json();
+        const events = json.data || [];
 
-        // Assumption: Source 1 times are CET (UTC+1).
-        // But data says "2026-02-03". We need to handle offsets carefully.
-        // If strict CET:
-        // "2026-02-03 19:00:00" => Parse as "2026-02-03T19:00:00+01:00"
+        return events.map((item: any) => {
+            const attr = item.attributes;
+            // Parse Date
+            // "date_diary": "2026-02-08", "diary_hour": "15:00:00"
+            // Assumption: Argentina Time (UTC-3) as it defaults to Futbol Libre
+            // ISO: 2026-02-08T15:00:00-03:00
+            const isoString = `${attr.date_diary}T${attr.diary_hour}-03:00`;
+            const dateObj = new Date(isoString);
 
-        return (data.events || []).map((ev: any) => {
-            // Build ISO string with offset
-            const isoCET = `${ev.date}T${ev.time}+01:00`;
-            const dateObj = new Date(isoCET);
+            // Channels
+            const channels = (attr.embeds?.data || []).map((embed: any) => ({
+                name: embed.attributes.embed_name || "Server",
+                url: embed.attributes.decoded_iframe_url || ""
+            }));
+
+            // Country/League
+            const league = attr.country?.data?.attributes?.name || "General";
 
             return {
-                id: `s1-${ev.id}`,
-                title: ev.description || ev.event || "Unknown Match", // Source 1 uses 'description'
-                league: ev.country || "General",
-                date: ev.date,
-                time: ev.time,
+                id: `s1-${item.id}`,
+                title: attr.diary_description || "Unknown Match",
+                league,
+                date: attr.date_diary,
+                time: attr.diary_hour,
                 timestamp: dateObj.toISOString(),
                 isLive: isMatchLive(dateObj),
-                source: 'rojadirecta',
-                channels: (ev.channels || []).map((c: any) => ({
-                    name: c.name || "Server",
-                    url: c.decoded_url || c.url || ""
-                }))
+                source: 'rojadirecta', // Keeping internal key same or changing to 'futbollibre'
+                channels
             } as Match;
+        }).filter((match: Match) => {
+            // Filter: Show only if (Start Time > Now - 3 hours)
+            // i.e. has not ended more than ~1 hour ago (assuming 2h duration)
+            const matchTime = new Date(match.timestamp).getTime();
+            const now = Date.now();
+            const threeHoursAgo = now - (3 * 60 * 60 * 1000);
+
+            // Keep if match is in future OR started within last 3 hours
+            return matchTime > threeHoursAgo;
         });
     } catch (e) {
         console.error("Source 1 Fetch Error", e);

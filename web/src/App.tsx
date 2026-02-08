@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { MatchPage } from './pages/MatchPage';
+import { SharePage } from './pages/SharePage';
 
 function App() {
   return (
@@ -8,7 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/match/:id" element={<MatchPage />} />
-        {/* Redirect unknown routes to home */}
+        <Route path="/share" element={<SharePage />} />
         <Route path="*" element={<HomePage />} />
       </Routes>
     </Router>

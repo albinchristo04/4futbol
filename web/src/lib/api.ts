@@ -132,7 +132,14 @@ const fetchSource2 = async (): Promise<Match[]> => {
             });
         });
 
-        return matches;
+        // Filter and return
+        return matches.filter((match: Match) => {
+            const matchTime = new Date(match.timestamp).getTime();
+            const now = Date.now();
+            const threeHoursAgo = now - (3 * 60 * 60 * 1000);
+            return matchTime > threeHoursAgo;
+        });
+
     } catch (e) {
         console.error("Source 2 Fetch Error", e);
         return [];

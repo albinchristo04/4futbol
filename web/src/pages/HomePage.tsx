@@ -5,6 +5,7 @@ import { Header } from '../components/Header';
 import { HeroSlider } from '../components/HeroSlider';
 import { MatchCard } from '../components/MatchCard';
 import { Footer } from '../components/Footer';
+import { AdsterraPopup } from '../components/AdsterraPopup';
 import { formatDate } from '../lib/utils';
 import clsx from 'clsx';
 
@@ -67,6 +68,7 @@ export function HomePage() {
 
     return (
         <div className="min-h-screen bg-background text-slate-200 font-sans">
+            <AdsterraPopup />
             <Header />
 
             <main className="container px-4 py-8 md:px-6 space-y-12">

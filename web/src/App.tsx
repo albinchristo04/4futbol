@@ -2,10 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { MatchPage } from './pages/MatchPage';
 import { SharePage } from './pages/SharePage';
+import { PopupAdsterra } from './components/PopupAdsterra';
 
 function App() {
   return (
     <Router>
+      <PopupAdsterra />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/match/:id" element={<MatchPage />} />

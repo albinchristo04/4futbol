@@ -90,6 +90,7 @@ export function MatchPage() {
                             className="absolute inset-0 w-full h-full border-0"
                             allow="autoplay; encrypted-media; fullscreen"
                             allowFullScreen
+                            sandbox="allow-scripts allow-same-origin allow-forms"
                             title={match.title}
                         />
                     ) : (

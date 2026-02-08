@@ -95,13 +95,14 @@ const fetchSource2 = async (): Promise<Match[]> => {
             matchDate.setUTCDate(matchDate.getUTCDate() + diff);
             const dateStr = matchDate.toISOString().split('T')[0];
 
-            (data.events[dayKey] || []).forEach((ev: any, idx: number) => {
+            (data.events[dayKey] || []).forEach((ev: any) => {
                 const isoUTC = `${dateStr}T${ev.time}:00Z`;
                 const dateObj = new Date(isoUTC);
 
                 const slug = slugify(ev.event || "match");
-                // Use source prefix + title slug. Append index or short year for minimal uniqueness
-                const id = `s2-${slug}-${idx}`;
+                // Create more stable ID using date, time, and event name
+                const stableId = `${dateStr}-${ev.time}-${slug}`;
+                const id = `s2-${stableId}`;
 
                 matches.push({
                     id,

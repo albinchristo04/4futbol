@@ -1,4 +1,4 @@
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import type { Match } from '../lib/types';
 import { fetchAllMatches } from '../lib/api';
@@ -12,6 +12,7 @@ import { AdsterraPopup } from '../components/AdsterraPopup';
 export function MatchPage() {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [match, setMatch] = useState<Match | null>(null);
     const [loading, setLoading] = useState(true);
     const [serverIndex, setServerIndex] = useState(parseInt(searchParams.get('server') || '0'));
@@ -21,17 +22,25 @@ export function MatchPage() {
             try {
                 const matches = await fetchAllMatches();
                 const found = matches.find(m => m.id === id);
-                if (found) setMatch(found);
+                if (found) {
+                    setMatch(found);
+                } else {
+                    // Redirect to homepage if match not found
+                    navigate('/');
+                }
                 setLoading(false);
             } catch (err) {
                 setLoading(false);
+                // Redirect to homepage on error
+                navigate('/');
             }
         }
         load();
-    }, [id]);
+    }, [id, navigate]);
 
     if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-primary">Loading Stream...</div>;
-    if (!match) return <div className="min-h-screen bg-background flex items-center justify-center text-red-500">Match not found.</div>;
+    // This should never be reached due to the redirect, but TypeScript needs the guard
+    if (!match) return null;
 
     const currentChannel = match.channels[serverIndex] || match.channels[0];
     const streamUrl = currentChannel?.url;

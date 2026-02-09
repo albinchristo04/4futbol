@@ -7,7 +7,6 @@ import { Footer } from '../components/Footer';
 import { formatTime } from '../lib/utils';
 import { Copy } from 'lucide-react';
 import { BannerAd } from '../components/BannerAd';
-import { AdsterraPopup } from '../components/AdsterraPopup';
 
 export function MatchPage() {
     const { id } = useParams();
@@ -53,7 +52,6 @@ export function MatchPage() {
 
     return (
         <div className="min-h-screen bg-background text-slate-200 font-sans">
-            <AdsterraPopup />
             <Header />
 
             <main className="container max-w-4xl px-4 py-8 mx-auto">
